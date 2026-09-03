@@ -1,0 +1,6 @@
+---
+description: Check coding-agent skills for conflicts before install or invocation
+alwaysApply: true
+---
+
+Before installing or invoking a coding-agent skill/plugin, use the `skill-collision-guard` workflow in `skills/skill-collision-guard/SKILL.md`. Report conflicts before removal or override. Session suppression must remain reversible and must not move the original files.

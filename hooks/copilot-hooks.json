@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "node \"${PLUGIN_ROOT}/hooks/skill-guard-hook.js\" --agent copilot",
+        "powershell": "node \"${PLUGIN_ROOT}\\hooks\\skill-guard-hook.js\" --agent copilot",
+        "timeoutSec": 5
+      }
+    ],
+    "userPromptSubmitted": [
+      {
+        "type": "command",
+        "bash": "node \"${PLUGIN_ROOT}/hooks/skill-guard-hook.js\" --agent copilot",
+        "powershell": "node \"${PLUGIN_ROOT}\\hooks\\skill-guard-hook.js\" --agent copilot",
+        "timeoutSec": 8
+      }
+    ]
+  }
+}

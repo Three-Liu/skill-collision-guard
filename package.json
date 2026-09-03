@@ -1,0 +1,48 @@
+{
+  "name": "skill-collision-guard",
+  "version": "0.1.0",
+  "description": "Detect conflicting coding-agent skills before install or invocation.",
+  "license": "MIT",
+  "bin": {
+    "skill-guard": "./bin/skill-guard.js"
+  },
+  "main": "./src/index.js",
+  "files": [
+    ".codex-plugin/",
+    ".claude-plugin/",
+    ".github/plugin/",
+    ".opencode/",
+    ".cursor/",
+    ".windsurf/",
+    ".clinerules/",
+    ".qoder/",
+    ".qoder-plugin/",
+    "bin/",
+    "docs/",
+    "hooks/",
+    "skills/",
+    "src/",
+    "AGENTS.md",
+    "GEMINI.md",
+    "opencode.json",
+    "plugin.json",
+    "plugin.yaml",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node --check bin/skill-guard.js && node --check hooks/skill-guard-hook.js && node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "agent-skills",
+    "codex",
+    "claude-code",
+    "coding-agent",
+    "plugin",
+    "skill"
+  ]
+}

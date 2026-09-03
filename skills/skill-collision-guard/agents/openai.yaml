@@ -1,0 +1,7 @@
+interface:
+  display_name: "Skill Collision Guard"
+  short_description: "Detect and suppress conflicting agent skills"
+  default_prompt: "Use $skill-collision-guard to check this skill before installation."
+
+policy:
+  allow_implicit_invocation: true

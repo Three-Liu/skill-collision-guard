@@ -1,0 +1,33 @@
+{
+  "name": "skill-collision-guard",
+  "version": "0.1.0",
+  "description": "Detect overlapping or contradictory coding-agent skills before installation and invocation.",
+  "author": {
+    "name": "Skill Collision Guard contributors"
+  },
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "conflict-detection",
+    "hooks",
+    "productivity"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Skill Collision Guard",
+    "shortDescription": "Find conflicting agent skills before they collide",
+    "longDescription": "Scans skills across coding-agent directories, compares intent and policies, and supports reversible session suppression.",
+    "developerName": "Skill Collision Guard contributors",
+    "category": "Productivity",
+    "capabilities": [
+      "Instructions",
+      "Lifecycle hooks"
+    ],
+    "defaultPrompt": [
+      "Check this skill before I install it.",
+      "Compare my installed coding-agent skills.",
+      "Suppress a conflicting skill for this session."
+    ],
+    "brandColor": "#167D6A"
+  }
+}

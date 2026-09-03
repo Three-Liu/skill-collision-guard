@@ -1,0 +1,5 @@
+{
+  "plugin": [
+    "./.opencode/plugins/skill-collision-guard.mjs"
+  ]
+}

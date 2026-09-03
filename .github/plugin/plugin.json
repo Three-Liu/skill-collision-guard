@@ -1,0 +1,16 @@
+{
+  "name": "skill-collision-guard",
+  "version": "0.1.0",
+  "description": "Detect overlapping or contradictory coding-agent skills before installation and invocation.",
+  "author": {
+    "name": "Skill Collision Guard contributors"
+  },
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "conflict-detection",
+    "hooks"
+  ],
+  "skills": "skills/",
+  "hooks": "hooks/copilot-hooks.json"
+}

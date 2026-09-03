@@ -1,0 +1,26 @@
+{
+  "_comment": "Copy hooks into .qoder/settings.json and replace SKILL_GUARD_DIR with this checkout path.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"SKILL_GUARD_DIR/hooks/skill-guard-hook.js\" --agent qoder"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "execute_command|run_command|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"SKILL_GUARD_DIR/hooks/skill-guard-hook.js\" --agent qoder"
+          }
+        ]
+      }
+    ]
+  }
+}
