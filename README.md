@@ -111,6 +111,8 @@ npm run check
 clawhub skill publish ./skills/skill-collision-guard \
   --version 0.1.0 \
   --changelog "Initial public release." \
+  --categories agents,security,development \
+  --topics coding-agents,skill-management,conflict-detection \
   --dry-run
 ```
 
