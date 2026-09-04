@@ -1,17 +1,37 @@
 ---
 name: skill-collision-guard
 description: Check for overlapping, duplicate, shadowing, or contradictory coding-agent skills before installing a skill/plugin or when multiple skills may trigger; compare them and help remove or reversibly suppress one for the current session.
+metadata:
+  openclaw:
+    requires:
+      bins:
+        - node
+        - git
 ---
 
 # Skill Collision Guard
 
-Use the deterministic CLI in this plugin instead of judging conflicts from names alone. Resolve the plugin root from this `SKILL.md` path, then run:
+Use the deterministic CLI bundled with this skill instead of judging conflicts from names alone. Resolve the runtime root from this `SKILL.md` path:
+
+- Standalone/ClawHub bundle: use this skill directory.
+- Host plugin bundle: use the nearest ancestor that contains `bin/skill-guard.js` and `src/`.
+
+Then run:
 
 ```bash
 node <plugin-root>/bin/skill-guard.js check-install <candidate> --agent <current-agent> --session <session-id>
 ```
 
 The candidate can be a local skill/plugin path, a GitHub URL or `owner/repo`, or a locally configured `plugin@marketplace` reference.
+
+## Runtime and Access
+
+- Requires Node.js 18 or newer. Remote Git candidates also use the declared `git` binary.
+- Inventory scans read `SKILL.md` files only from the explicit project, user, system, extension, and plugin-cache roots owned by the selected host. They do not crawl the entire home directory.
+- Local candidate checks read files below the user-supplied candidate path. The detector parses instructions but never executes candidate skill code.
+- Remote candidate checks launch `git clone --depth 1` as a child process with a 20-second default timeout. The clone is created under the operating-system temporary directory and removed after success or failure.
+- Suppression writes only a small JSON state file under `$SKILL_GUARD_STATE_DIR`, `$XDG_STATE_HOME/skill-collision-guard`, or the platform user-state directory. Session end removes only that session file.
+- The detector does not install, remove, rename, or edit another skill. It does not request credentials or transmit the contents of installed skills to a service.
 
 ## Decisions
 

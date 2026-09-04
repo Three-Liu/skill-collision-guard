@@ -17,6 +17,20 @@ test('all JSON manifests parse and point to shipped resources', () => {
   for (const file of ['bin/skill-guard.js', 'hooks/skill-guard-hook.js', 'skills/skill-collision-guard/SKILL.md']) {
     assert.ok(fs.existsSync(path.join(root, file)), `${file} must ship`);
   }
+  const bundledRuntime = [
+    'bin/skill-guard.js',
+    ...fs.readdirSync(path.join(root, 'src')).filter((file) => file.endsWith('.js')).map((file) => `src/${file}`),
+  ];
+  for (const file of bundledRuntime) {
+    assert.equal(
+      fs.readFileSync(path.join(root, 'skills', 'skill-collision-guard', file), 'utf8'),
+      fs.readFileSync(path.join(root, file), 'utf8'),
+      `ClawHub bundle drifted: ${file}`,
+    );
+  }
+  const bundledSkill = fs.readFileSync(path.join(root, 'skills', 'skill-collision-guard', 'SKILL.md'), 'utf8');
+  assert.match(bundledSkill, /metadata:\s+openclaw:\s+requires:\s+bins:\s+- node\s+- git/);
+  assert.match(bundledSkill, /git clone --depth 1/);
   const codex = JSON.parse(fs.readFileSync(path.join(root, '.codex-plugin/plugin.json')));
   assert.equal(codex.name, path.basename(root) === 'skill-collision-guard' ? path.basename(root) : 'skill-collision-guard');
   assert.equal(codex.hooks, undefined);

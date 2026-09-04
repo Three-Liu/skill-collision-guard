@@ -20,6 +20,8 @@
     "bin/",
     "docs/",
     "hooks/",
+    "assets/",
+    "scripts/",
     "skills/",
     "src/",
     "AGENTS.md",
@@ -27,12 +29,16 @@
     "opencode.json",
     "plugin.json",
     "plugin.yaml",
+    "CHANGELOG.md",
     "README.md",
+    "README.zh-CN.md",
     "LICENSE"
   ],
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check": "node --check bin/skill-guard.js && node --check hooks/skill-guard-hook.js && node --test tests/*.test.js"
+    "sync:skill-bundle": "node scripts/sync-skill-bundle.js",
+    "check:skill-bundle": "node scripts/sync-skill-bundle.js --check",
+    "check": "node --check bin/skill-guard.js && node --check hooks/skill-guard-hook.js && npm run check:skill-bundle && node --test tests/*.test.js"
   },
   "engines": {
     "node": ">=18"
