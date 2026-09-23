@@ -96,7 +96,7 @@ skill-guard check-install \
 
 ## ClawHub
 
-[`skills/skill-collision-guard`](skills/skill-collision-guard) 是可独立运行的 ClawHub bundle。Frontmatter 声明了必须存在的 `node` 和 `git` 二进制；skill 指令同时披露本地文件读取、临时 shallow clone 子进程、session 状态写入和清理行为。
+[`skills/skill-collision-guard`](skills/skill-collision-guard) 是可独立运行的 ClawHub bundle。Frontmatter 声明 `node`/`git` 运行时、受限的 CLI 工具白名单、可选状态目录变量，并要求显式调用；skill 指令同时披露受边界限制的本地读取、拒绝越出候选根目录的符号链接、临时 shallow clone 子进程、session 状态写入和清理行为。`.clawhubignore` 会将宿主专用路由元数据排除在 portable 发布物之外。
 
 发布前使用 Node.js 22 或更高版本运行当前官方 `clawhub` CLI、完成认证、同步生成的运行时文件，并先预览本次发布。发布后的 skill 运行时本身仍支持 Node.js 18 或更高版本。
 
@@ -109,8 +109,8 @@ npm run sync:skill-bundle
 npm run check
 
 clawhub skill publish ./skills/skill-collision-guard \
-  --version 0.1.0 \
-  --changelog "Initial public release." \
+  --version 0.1.1 \
+  --changelog "强化候选路径边界与 ClawHub 元数据。" \
   --categories agents,security,development \
   --topics coding-agents,skill-management,conflict-detection \
   --dry-run

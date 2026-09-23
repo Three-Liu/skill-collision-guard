@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const test = require('node:test');
 const { githubUrl, loadCandidate, resolveMarketplaceCandidate } = require('../src/candidate');
+const { isWithinRoot } = require('../src/skill');
 const { temporary, writeSkill } = require('./helpers');
 
 test('resolves plugin@marketplace from a local marketplace', (t) => {
@@ -31,4 +32,42 @@ test('normalizes GitHub tree URLs into a shallow-clone source and subpath', () =
     ref: 'main',
     subpath: 'plugins/review',
   });
+});
+
+test('keeps candidate discovery inside the canonical root when a child symlink escapes', (t) => {
+  const temp = temporary('candidate-symlink-boundary');
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const candidate = path.join(temp, 'candidate');
+  const outside = path.join(temp, 'outside');
+  fs.mkdirSync(candidate, { recursive: true });
+  writeSkill(outside, 'outside-skill', 'Must not be read through a candidate link.');
+  try {
+    fs.symlinkSync(outside, path.join(candidate, 'linked-outside'), 'dir');
+    fs.symlinkSync(
+      path.join(outside, 'outside-skill', 'SKILL.md'),
+      path.join(candidate, 'SKILL.md'),
+      'file',
+    );
+  } catch (error) {
+    t.skip(`symbolic links unavailable: ${error.message}`);
+    return;
+  }
+
+  assert.equal(isWithinRoot(fs.realpathSync(candidate), fs.realpathSync(outside)), false);
+  assert.throws(() => loadCandidate(candidate), (error) => error.code === 'NO_SKILLS');
+});
+
+test('allows an internal candidate symlink without reading it twice', (t) => {
+  const temp = temporary('candidate-internal-symlink');
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const candidate = path.join(temp, 'candidate');
+  const skillFile = writeSkill(candidate, 'visible', 'An internal linked skill.');
+  try {
+    fs.symlinkSync(path.dirname(skillFile), path.join(candidate, 'alias'), 'dir');
+  } catch (error) {
+    t.skip(`symbolic links unavailable: ${error.message}`);
+    return;
+  }
+
+  assert.deepEqual(loadCandidate(candidate).skills.map((item) => item.name), ['visible']);
 });

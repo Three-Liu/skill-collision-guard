@@ -30,7 +30,22 @@ test('all JSON manifests parse and point to shipped resources', () => {
   }
   const bundledSkill = fs.readFileSync(path.join(root, 'skills', 'skill-collision-guard', 'SKILL.md'), 'utf8');
   assert.match(bundledSkill, /metadata:\s+openclaw:\s+requires:\s+bins:\s+- node\s+- git/);
-  assert.match(bundledSkill, /git clone --depth 1/);
+  assert.match(bundledSkill, /git clone --depth 1 --no-tags/);
+  assert.match(bundledSkill, /Use only when the user explicitly asks/);
+  assert.match(bundledSkill, /allowed-tools:/);
+  assert.match(bundledSkill, /\{baseDir\}\/bin\/skill-guard\.js/);
+  assert.match(bundledSkill, /symbolic links whose canonical target leaves/);
+  assert.ok(fs.existsSync(path.join(root, 'skills', 'skill-collision-guard', '.clawhubignore')));
+  assert.match(
+    fs.readFileSync(path.join(root, 'skills', 'skill-collision-guard', '.clawhubignore'), 'utf8'),
+    /^agents\/$/m,
+  );
+  const agentMetadata = fs.readFileSync(
+    path.join(root, 'skills', 'skill-collision-guard', 'agents', 'openai.yaml'),
+    'utf8',
+  );
+  assert.match(agentMetadata, /allow_implicit_invocation:\s+false/);
+  assert.match(agentMetadata, /only when the user explicitly asks/);
   const codex = JSON.parse(fs.readFileSync(path.join(root, '.codex-plugin/plugin.json')));
   assert.equal(codex.name, path.basename(root) === 'skill-collision-guard' ? path.basename(root) : 'skill-collision-guard');
   assert.equal(codex.hooks, undefined);

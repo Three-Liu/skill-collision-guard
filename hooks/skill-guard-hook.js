@@ -172,15 +172,23 @@ function handlePreTool(input) {
   if (!reference || /SKILL_GUARD_ALLOW_CONFLICTS=1/.test(command)) return;
 
   let candidate;
+  let remoteNotice = '';
   try {
-    candidate = loadCandidate(reference, { cwd: input.cwd || process.cwd(), timeout: 18000 });
+    candidate = loadCandidate(reference, {
+      cwd: input.cwd || process.cwd(),
+      timeout: 18000,
+      onRemoteInspection() {
+        remoteNotice = `Remote candidate retrieval is enabled for '${reference}' using a temporary shallow Git clone; candidate code is not executed.`;
+      },
+    });
     const { state, active } = activeSkills(input);
     const conflicts = analyzeCandidates(candidate.skills, active, { ignorePaths: state.suppressed });
     if (!conflicts.length) return;
     const report = [
       `Skill/plugin installation preflight for ${reference}:`,
+      remoteNotice,
       formatComparisons(conflicts, { sessionId: sessionKey(input), context: 'install' }),
-    ].join('\n');
+    ].filter(Boolean).join('\n');
     const decisionRequired = conflicts.some(requiresInstallDecision);
     output('PreToolUse', decisionRequired
       ? `${report}\n\nInstallation paused for a decision. Ask the user to skip the candidate, remove an eligible existing skill, or use reversible session suppression. Re-run only after that choice; an explicit override is SKILL_GUARD_ALLOW_CONFLICTS=1.`

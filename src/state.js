@@ -1,5 +1,7 @@
 'use strict';
 
+// Session state is a reversible instruction overlay used by the analyzer and
+// lifecycle hooks; it never mutates the installed skill files.
 const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
@@ -33,9 +35,15 @@ function readSession(sessionId) {
 
 function writeSession(sessionId, value) {
   const file = statePath(sessionId);
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  const next = { session: String(sessionId || 'default'), updatedAt: new Date().toISOString(), suppressed: value.suppressed || [] };
-  fs.writeFileSync(file, `${JSON.stringify(next, null, 2)}\n`, 'utf8');
+  // Session suppression is intentionally persisted locally so lifecycle hooks
+  // and the CLI share one reversible overlay. Only the hashed session filename
+  // and selected skill names/paths are stored; no skill contents are written.
+  const directory = path.dirname(file);
+  fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+  try { fs.chmodSync(directory, 0o700); } catch (_) {}
+  const next = { session: safeSessionId(sessionId), updatedAt: new Date().toISOString(), suppressed: value.suppressed || [] };
+  fs.writeFileSync(file, `${JSON.stringify(next, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
+  try { fs.chmodSync(file, 0o600); } catch (_) {}
   return next;
 }
 
@@ -56,6 +64,8 @@ function restore(sessionId, selectors = []) {
 }
 
 function clearSession(sessionId) {
+  // SessionEnd removes exactly the hashed state file for this session. It does
+  // not remove a skill, its directory, or any other user data.
   try { fs.unlinkSync(statePath(sessionId)); } catch (_) {}
 }
 

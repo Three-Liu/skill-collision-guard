@@ -10,6 +10,10 @@ const STOP_WORDS = new Set([
   'work', 'you', 'your'
 ]);
 
+// These expressions classify instructions found in skills. They are evidence
+// for a human review, never permissions or commands for the guard to execute.
+// Approval-related phrases describe a candidate skill's policy and must not
+// disable the guard's own human approval boundary.
 const POLICY_PAIRS = [
   ['dependency policy', /\b(no|avoid|without)\s+(new\s+)?dependenc|\bstdlib\s+first|standard library first/i,
     /\b(?:proven|third[- ]party|external)\s+(?:library|dependenc|package)|\binstall\s+(?:a\s+)?(?:library|dependenc|package)|do not hand[- ]roll/i],

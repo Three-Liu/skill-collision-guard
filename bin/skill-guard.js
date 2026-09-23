@@ -36,6 +36,17 @@ function emit(value, json) {
   process.stdout.write(`${json ? JSON.stringify(value, null, 2) : value}\n`);
 }
 
+function inspectionOptions(options) {
+  return {
+    ...options,
+    onRemoteInspection({ reference }) {
+      process.stderr.write(
+        `skill-guard: inspecting remote candidate '${reference}' with a temporary shallow Git clone; no candidate code will be executed.\n`,
+      );
+    },
+  };
+}
+
 function needSession(options) {
   if (options.session) return options.session;
   process.stderr.write('Missing required --session ID.\n');
@@ -51,7 +62,7 @@ function commandScan(options) {
 }
 
 function commandCheck(reference, options) {
-  const candidate = loadCandidate(reference, options);
+  const candidate = loadCandidate(reference, inspectionOptions(options));
   try {
     const state = options.session ? readSession(options.session) : { suppressed: [] };
     const installed = discoverSkills(options);
@@ -72,16 +83,19 @@ function commandCheck(reference, options) {
 }
 
 function commandCompare(leftReference, rightReference, options) {
-  const left = loadCandidate(leftReference, options);
-  const right = loadCandidate(rightReference, options);
+  const inspectOptions = inspectionOptions(options);
+  let left;
+  let right;
   try {
+    left = loadCandidate(leftReference, inspectOptions);
+    right = loadCandidate(rightReference, inspectOptions);
     const comparisons = [];
     for (const leftSkill of left.skills) for (const rightSkill of right.skills) comparisons.push(compareSkills(leftSkill, rightSkill));
     if (options.json) emit(comparisons.map(comparisonSummary), true);
     else emit(formatComparisons(comparisons.filter((item) => item.severity !== 'none')), false);
   } finally {
-    left.cleanup();
-    right.cleanup();
+    if (left) left.cleanup();
+    if (right) right.cleanup();
   }
 }
 
@@ -123,4 +137,4 @@ function main(argv = process.argv.slice(2)) {
 
 if (require.main === module) main();
 
-module.exports = { main, parseArgs };
+module.exports = { inspectionOptions, main, parseArgs };

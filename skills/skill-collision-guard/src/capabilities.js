@@ -1,5 +1,8 @@
 'use strict';
 
+// Capability matching is intentionally multilingual. English and Chinese
+// phrases are recognition signals for a skill's declared scope, not forced
+// locale triggers and not instructions that the agent must follow.
 const CAPABILITY_FAMILIES = [
   {
     id: 'test-driven-development',

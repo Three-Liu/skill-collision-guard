@@ -1,5 +1,7 @@
 'use strict';
 
+// Host roots are an explicit inventory boundary for collision analysis; this
+// module does not crawl arbitrary home-directory content.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');

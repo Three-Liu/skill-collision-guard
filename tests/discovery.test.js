@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const test = require('node:test');
 const { discoverSkills } = require('../src/discovery');
-const { readCandidate } = require('../src/skill');
+const { locateSkillRoots, readCandidate } = require('../src/skill');
 const { temporary, writeSkill } = require('./helpers');
 
 test('discovery reads direct children and ignores nested resource skills', (t) => {
@@ -43,4 +43,22 @@ test('the same symlinked SKILL.md is deduplicated while retaining origins', (t) 
   ] });
   assert.equal(skills.length, 1);
   assert.deepEqual(skills[0].origins.map((item) => item.agent), ['one', 'two']);
+});
+
+test('root discovery does not follow a symlink outside the searched root', (t) => {
+  const temp = temporary('root-boundary');
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  const searchRoot = path.join(temp, 'cache');
+  const outside = path.join(temp, 'outside');
+  fs.mkdirSync(searchRoot, { recursive: true });
+  fs.mkdirSync(outside, { recursive: true });
+  writeSkill(path.join(outside, 'skills'), 'outside', 'Must not become an installed root.');
+  try {
+    fs.symlinkSync(outside, path.join(searchRoot, 'linked-plugin'), 'dir');
+  } catch (error) {
+    t.skip(`symbolic links unavailable: ${error.message}`);
+    return;
+  }
+
+  assert.deepEqual(locateSkillRoots(searchRoot, 4), []);
 });

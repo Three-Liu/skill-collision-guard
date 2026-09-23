@@ -95,7 +95,7 @@ function recommendation(comparison, sessionId = '<session-id>', context = 'gener
     if (old.scope === 'system') {
       return `Skip candidate '${candidate.name}' to keep system skill '${old.name}'; or choose the candidate and cooperatively suppress system skill '${old.name}' for this session: skill-guard suppress "${old.path}" --session "${sessionId}"`;
     }
-    return `Skip candidate '${candidate.name}' to keep installed '${old.name}'; or choose the candidate, then remove installed '${old.name}' permanently or suppress installed '${old.name}' for this session: skill-guard suppress "${old.path}" --session "${sessionId}"`;
+    return `Skip candidate '${candidate.name}' to keep installed '${old.name}'; or, after explicit user approval, remove installed '${old.name}' permanently or suppress installed '${old.name}' for this session: skill-guard suppress "${old.path}" --session "${sessionId}"`;
   }
   if (comparison.kind === 'name-shadow') {
     return `Keep only one '${old.name}', or temporarily run: skill-guard suppress "${old.path}" --session "${sessionId}"`;
@@ -104,7 +104,7 @@ function recommendation(comparison, sessionId = '<session-id>', context = 'gener
     return `Choose the policy needed for this task; suppress '${old.name}' for this session before continuing.`;
   }
   if (comparison.kind === 'probable-duplicate' || comparison.kind === 'capability-collision') {
-    return `Prefer the narrower skill and remove the duplicate, or suppress '${old.name}' for this session.`;
+    return `Prefer the narrower skill and, after explicit user approval, remove the duplicate, or suppress '${old.name}' for this session.`;
   }
   if (comparison.kind === 'capability-conflict') {
     return `Choose one behavior for this capability; suppress '${old.name}' for this session before continuing.`;

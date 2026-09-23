@@ -1,11 +1,14 @@
 'use strict';
 
+// Candidate acquisition is a read-only input stage for collision analysis.
+// It resolves local sources or explicitly requested Git sources; it never
+// installs or executes the inspected skill.
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { ancestors, findRepoRoot } = require('./platforms');
-const { readCandidate } = require('./skill');
+const { isWithinRoot, readCandidate } = require('./skill');
 
 function marketplaceFiles(options = {}) {
   const cwd = path.resolve(options.cwd || process.cwd());
@@ -59,6 +62,20 @@ function githubUrl(reference) {
   return { url: reference.replace(/^git\+/, ''), ref: null, subpath: '' };
 }
 
+function notifyRemoteInspection(options, reference) {
+  if (typeof options.onRemoteInspection !== 'function') return;
+  try {
+    options.onRemoteInspection({
+      reference,
+      transport: 'git',
+      network: true,
+      temporaryDirectory: true,
+    });
+  } catch (_) {
+    // A disclosure callback must never change inspection semantics.
+  }
+}
+
 function loadCandidate(reference, options = {}) {
   const marketplacePath = resolveMarketplaceCandidate(reference, options);
   const local = marketplacePath || path.resolve(options.cwd || process.cwd(), reference);
@@ -70,13 +87,18 @@ function loadCandidate(reference, options = {}) {
     throw error;
   }
 
+  // Remote inspection is deliberately explicit: the caller supplied a Git
+  // reference. It performs a shallow, read-only fetch into a temporary folder;
+  // callers can use this callback to disclose that network/filesystem activity.
+  notifyRemoteInspection(options, reference);
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'skill-guard-candidate-'));
   const remote = githubUrl(reference);
-  const args = ['clone', '--depth', '1'];
+  const args = ['clone', '--depth', '1', '--no-tags', '-c', 'credential.interactive=false'];
   if (remote.ref) args.push('--branch', remote.ref);
   args.push(remote.url, temporary);
   const result = spawnSync('git', args, { encoding: 'utf8', timeout: options.timeout || 20000 });
   if (result.status !== 0) {
+    // The temporary clone is never retained after an unsuccessful inspection.
     fs.rmSync(temporary, { recursive: true, force: true });
     const detail = (result.stderr || result.error?.message || 'git clone failed').trim();
     const error = new Error(`Unable to inspect remote candidate ${reference}: ${detail}`);
@@ -85,16 +107,33 @@ function loadCandidate(reference, options = {}) {
   }
   try {
     const candidateRoot = remote.subpath ? path.resolve(temporary, remote.subpath) : temporary;
-    if (!candidateRoot.startsWith(`${temporary}${path.sep}`) && candidateRoot !== temporary) {
+    let temporaryReal;
+    let candidateRootReal;
+    try {
+      temporaryReal = fs.realpathSync(temporary);
+      candidateRootReal = fs.realpathSync(candidateRoot);
+    } catch (_) {
+      candidateRootReal = null;
+    }
+    const escapesLexically = !candidateRoot.startsWith(`${temporary}${path.sep}`) && candidateRoot !== temporary;
+    const escapesCanonically = candidateRootReal && !isWithinRoot(temporaryReal, candidateRootReal);
+    if (escapesLexically || escapesCanonically) {
       const error = new Error(`GitHub candidate subpath escapes the repository: ${remote.subpath}`);
       error.code = 'INVALID_SUBPATH';
       throw error;
     }
     const skills = readCandidate(candidateRoot);
+    let cleaned = false;
     return {
       source: reference,
       skills,
-      cleanup() { fs.rmSync(temporary, { recursive: true, force: true }); },
+      remote: true,
+      cleanup() {
+        if (cleaned) return;
+        cleaned = true;
+        // Cleanup removes only the temporary clone created above.
+        fs.rmSync(temporary, { recursive: true, force: true });
+      },
     };
   } catch (error) {
     fs.rmSync(temporary, { recursive: true, force: true });
@@ -102,4 +141,11 @@ function loadCandidate(reference, options = {}) {
   }
 }
 
-module.exports = { githubUrl, isRemote, loadCandidate, marketplaceFiles, resolveMarketplaceCandidate };
+module.exports = {
+  githubUrl,
+  isRemote,
+  loadCandidate,
+  marketplaceFiles,
+  notifyRemoteInspection,
+  resolveMarketplaceCandidate,
+};

@@ -1,0 +1,3 @@
+# Host-specific routing metadata is kept for local adapters but is not needed
+# by the portable ClawHub skill and should not widen implicit invocation.
+agents/

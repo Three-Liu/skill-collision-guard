@@ -96,7 +96,7 @@ skill-guard check-install \
 
 ## ClawHub
 
-The folder [`skills/skill-collision-guard`](skills/skill-collision-guard) is a self-contained ClawHub bundle. Its frontmatter declares the required `node` and `git` binaries, while the instructions disclose local reads, the temporary shallow-clone child process, session-state writes, and cleanup behavior.
+The folder [`skills/skill-collision-guard`](skills/skill-collision-guard) is a self-contained ClawHub bundle. Its frontmatter declares the `node`/`git` runtime, a narrow CLI tool allowlist, optional state-directory variables, and explicit-only invocation. The instructions disclose bounded local reads, rejection of out-of-root symlinks, the temporary shallow-clone child process, session-state writes, and cleanup behavior. `.clawhubignore` leaves host-specific routing metadata out of the portable release.
 
 Before publishing, use Node.js 22 or newer for the current official `clawhub` CLI, authenticate, synchronize the generated runtime, and preview the exact release. The published skill runtime itself still supports Node.js 18 or newer.
 
@@ -109,8 +109,8 @@ npm run sync:skill-bundle
 npm run check
 
 clawhub skill publish ./skills/skill-collision-guard \
-  --version 0.1.0 \
-  --changelog "Initial public release." \
+  --version 0.1.1 \
+  --changelog "Harden candidate boundaries and ClawHub metadata." \
   --categories agents,security,development \
   --topics coding-agents,skill-management,conflict-detection \
   --dry-run

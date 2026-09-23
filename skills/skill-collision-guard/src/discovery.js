@@ -1,5 +1,7 @@
 'use strict';
 
+// Discovery supplies the analyzer with SKILL.md metadata from explicit host
+// roots. It does not select, execute, install, or suppress a skill itself.
 const fs = require('fs');
 const { platformRoots } = require('./platforms');
 const path = require('path');
